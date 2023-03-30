@@ -11,9 +11,18 @@ pip install django-form-action
 # Usage
 
 ```
+from django.contrib import admin
+from form_action import form_action
+
+
 @form_action(MyForm, description='Some Label')
 def my_django_admin_action(modeladmin, request, queryset, form):
     ...
     ...
     ...
+
+
+class MyModelAdmin(admin.ModelAdmin):
+       actions = [my_django_admin_action]
+
 ```
