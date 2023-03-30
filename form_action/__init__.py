@@ -1,7 +1,7 @@
 
 from django.contrib import admin
 from django.http import HttpResponse
-from django.template import Context
+from django.template import RequestContext
 from django.template import Template
 
 template = Template('''
@@ -46,7 +46,7 @@ def form_action(form, description):
             if request.POST.get('submit') is not None:
                 my_form = form(request.POST)
                 if my_form.is_valid():
-                    return func(modeladmin, request, queryset, form)
+                    return func(modeladmin, request, queryset, my_form)
             else:
                 my_form = form()
             context = {
@@ -57,7 +57,10 @@ def form_action(form, description):
                 'title': description,
                 'form': my_form,
             }
-            return HttpResponse(template.render(Context(context)))
+            context = RequestContext(request, context)
+            return HttpResponse(template.render(context))
         wrapper.short_description = description
+        # required because django requires unique name for action names
+        wrapper.__name__ = func.__name__
         return wrapper
     return decorator

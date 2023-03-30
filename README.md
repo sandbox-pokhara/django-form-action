@@ -17,9 +17,7 @@ from form_action import form_action
 
 @form_action(MyForm, description='Some Label')
 def my_django_admin_action(modeladmin, request, queryset, form):
-    ...
-    ...
-    ...
+    print(form.cleaned_data['my_field'])
 
 
 class MyModelAdmin(admin.ModelAdmin):
