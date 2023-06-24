@@ -1,10 +1,9 @@
-
 from django.contrib import admin
 from django.http import HttpResponse
 from django.template import RequestContext
 from django.template import Template
 
-template = Template('''
+template = Template("""
 {% extends "admin/base_site.html" %}
 {% load admin_urls static l10n %}
 {% block extrastyle %}
@@ -37,30 +36,32 @@ template = Template('''
     </form>
   </div>
 {% endblock %}
-''')
+""")
 
 
 def form_action(form, description):
     def decorator(func):
         def wrapper(modeladmin, request, queryset):
-            if request.POST.get('submit') is not None:
+            if request.POST.get("submit") is not None:
                 my_form = form(request.POST)
                 if my_form.is_valid():
                     return func(modeladmin, request, queryset, my_form)
             else:
                 my_form = form()
             context = {
-                'action': request.POST['action'],
-                'queryset': queryset,
-                'site_header': admin.site.site_header,
-                'site_title': admin.site.site_title,
-                'title': description,
-                'form': my_form,
+                "action": request.POST["action"],
+                "queryset": queryset,
+                "site_header": admin.site.site_header,
+                "site_title": admin.site.site_title,
+                "title": description,
+                "form": my_form,
             }
             context = RequestContext(request, context)
             return HttpResponse(template.render(context))
+
         wrapper.short_description = description
         # required because django requires unique name for action names
         wrapper.__name__ = func.__name__
         return wrapper
+
     return decorator

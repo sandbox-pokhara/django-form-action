@@ -8,7 +8,7 @@ Django action to add an intermediate page to parse form data
 pip install django-form-action
 ```
 
-# Usage
+## Usage
 
 ```
 from django.contrib import admin
