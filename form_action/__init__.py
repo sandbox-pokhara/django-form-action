@@ -14,7 +14,7 @@ template = Template("""
 {% endblock %}
 {% block content %}
   <div id="content-main">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       {% csrf_token %}
       {% for obj in queryset.all %}<input type="hidden" name="_selected_action" value="{{ obj.pk|unlocalize }}"/>{% endfor %}
       <div>
@@ -43,7 +43,7 @@ def form_action(form, description):
     def decorator(func):
         def wrapper(modeladmin, request, queryset):
             if request.POST.get("submit") is not None:
-                my_form = form(request.POST)
+                my_form = form(request.POST, request.FILES)
                 if my_form.is_valid():
                     return func(modeladmin, request, queryset, my_form)
             else:
