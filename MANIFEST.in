@@ -1,5 +1,0 @@
-global-exclude *
-include setup.py
-include README.md
-include LICENSE
-include form_action/__init__.py
