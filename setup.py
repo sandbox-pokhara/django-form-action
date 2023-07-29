@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name="django-form-action",
-    version="1.0.2",
+    version="1.0.3",
     author="Pradish Bijukchhe",
     author_email="pradishbijukchhe@gmail.com",
     description="Django action to add an intermediate page to parse form data",
