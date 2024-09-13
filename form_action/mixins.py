@@ -1,5 +1,9 @@
 from urllib.parse import urljoin
+from typing import Any
+from typing import Dict
+from typing import List
 
+from django.http import HttpRequest
 from django.template import engines
 from django.urls import path
 
@@ -21,7 +25,9 @@ template = engines["django"].from_string("""
 class ExtraButtonMixin:
     change_list_template = template
 
-    def changelist_view(self, request, extra_context=None):
+    def changelist_view(
+        self, request: HttpRequest, extra_context: Dict[str, Any] = None
+    ):
         extra_context = extra_context or {}
         extra_buttons = getattr(self, "extra_buttons", [])
         extra_buttons = [
@@ -39,7 +45,7 @@ class ExtraButtonMixin:
         urls = super().get_urls()
         return self.get_extra_urls() + urls
 
-    def get_extra_urls(self):
+    def get_extra_urls(self) -> List[path]:
         extra_buttons = getattr(self, "extra_buttons", [])
         return [
             path(f"actions/{func.name}/", self.admin_site.admin_view(func))

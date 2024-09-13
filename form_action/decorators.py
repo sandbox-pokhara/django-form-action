@@ -1,5 +1,8 @@
+from typing import Any
+
 from django.contrib import admin
 from django.http import HttpResponse
+from django.http import HttpRequest
 from django.template import RequestContext
 from django.template import Template
 
@@ -39,7 +42,9 @@ template = Template("""
 """)
 
 
-def render_form(request, form, title, action="", qs=None):
+def render_form(
+    request: HttpRequest, form: Any, title: str, action: str = "", qs: Any = None
+):
     context = {
         "site_header": admin.site.site_header,
         "site_title": admin.site.site_title,
@@ -53,7 +58,7 @@ def render_form(request, form, title, action="", qs=None):
     return HttpResponse(template.render(context))
 
 
-def form_action(form, description):
+def form_action(form: Any, description: str):
     def decorator(func):
         def wrapper(modeladmin, request, queryset):
             action = request.POST["action"]
@@ -76,7 +81,7 @@ def form_action(form, description):
     return decorator
 
 
-def extra_button(title, form=None):
+def extra_button(title: str, form: Any = None):
     def decorator(func):
         def wrapper(request):
             if form is None:
