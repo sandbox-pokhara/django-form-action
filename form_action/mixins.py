@@ -1,5 +1,4 @@
 from urllib.parse import urljoin
-from typing import Any
 from typing import Dict
 from typing import List
 
@@ -26,7 +25,7 @@ class ExtraButtonMixin:
     change_list_template = template
 
     def changelist_view(
-        self, request: HttpRequest, extra_context: Dict[str, Any] = None
+        self, request: HttpRequest, extra_context: Dict[str, object] = None
     ):
         extra_context = extra_context or {}
         extra_buttons = getattr(self, "extra_buttons", [])
