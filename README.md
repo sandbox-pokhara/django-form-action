@@ -1,71 +1,67 @@
 # django-form-action
 
-Django action/button with an intermediate page to parse data from a form
+Django action with an intermediate page to parse data from a form
 
 ## Installation
 
-Just install the pakage from PyPI
+You can install the package via pip:
 
 ```
 pip install django-form-action
 ```
 
+## Demo
+
+![Step 1](docs/step1.png)
+![Step 2](docs/step2.png)
+![Step 3](docs/step3.png)
+
 ## Usage
 
-Django admin action with form
-![Demo Form Action](https://raw.githubusercontent.com/sandbox-pokhara/django-form-action/master/demo/form-action.gif)
+Example usage showing an action in UserAdmin which has an intermediate form that parses data on how to perform that action.
 
 ```python
+from typing import Any
+
 from django.contrib import admin
 from django.contrib import messages
+from django.contrib.auth.admin import UserAdmin
+from django.contrib.auth.models import User
+from django.db.models import QuerySet
 from django.forms import CharField
 from django.forms import Form
+from django.http import HttpRequest
 
-from dummyapp.models import Fruit
-from form_action import form_action
+from django_form_action import form_action
 
-
-class MyForm(Form):
-    message = CharField()
+admin.site.unregister(User)
 
 
-@form_action(MyForm, description="Do some task")
-def my_action(modeladmin, request, queryset, form):
-    msg = form.cleaned_data["message"]
-    messages.add_message(request, messages.INFO, f"Got message: {msg}")
+class ChangeFirstName(Form):
+    first_name = CharField()
 
 
-@admin.register(Fruit)
-class MyModelAdmin(admin.ModelAdmin):
-    actions = [my_action]
-```
-
-Or use it as an extra button with form
-![Demo Extra Button](https://raw.githubusercontent.com/sandbox-pokhara/django-form-action/master/demo/extra-button.gif)
-
-```python
-from django.contrib import admin
-from django.forms import CharField
-from django.forms import Form
-from django.http.response import HttpResponse
-
-from dummyapp.models import Fruit
-from form_action.decorators import extra_button
-from form_action.mixins import ExtraButtonMixin
+@form_action(ChangeFirstName, "Change selected users' first name")
+def change_first_name(
+    modeladmin: Any,
+    request: HttpRequest,
+    queryset: QuerySet[User],
+    form: ChangeFirstName,
+):
+    queryset.update(first_name=form.cleaned_data["first_name"])
+    messages.add_message(
+        request,
+        messages.INFO,
+        "Successfully changed the first name of selected users.",
+    )
 
 
-class MyForm(Form):
-    message = CharField()
-
-
-@extra_button("Test Button", MyForm)
-def test(request, form):
-    msg = form.cleaned_data["message"]
-    return HttpResponse(f"Got message: {msg}")
-
-
-@admin.register(Fruit)
-class MyModelAdmin(ExtraButtonMixin, admin.ModelAdmin):
-    extra_buttons = [test]
+@admin.register(User)
+class CustomUserAdmin(UserAdmin):
+    actions = [change_first_name]
 
 ```
+
+## License
+
+This project is licensed under the terms of the MIT license.

@@ -109,6 +109,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+.vscode
 
 # Spyder project settings
 .spyderproject
@@ -127,8 +128,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+dist
 
-# Custom
-dummy
-dummyapp
-manage.py
+# demo project
+/demoproject
+/manage.py
+/core
+
+# project specific
+/test.py
+/temp

@@ -1,9 +1,41 @@
 [build-system]
-requires = [
-    "setuptools>=42",
-    "wheel",
-]
+requires = ["setuptools>=70.0.0"]
 build-backend = "setuptools.build_meta"
 
+[project]
+name = "django-form-action"
+requires-python = ">=3"
+authors = [{ name = "Pradish Bijukchhe", email = "pradish@sandbox.com.np" }]
+description = "Django action with an intermediate page to parse data from a form"
+readme = "README.md"
+license = { file = "LICENSE" }
+keywords = []
+classifiers = ["Programming Language :: Python :: 3"]
+dynamic = ["version", "dependencies"]
+
+
+[project.urls]
+Homepage = "https://github.com/sandbox-pokhara/django-form-action"
+Issues = "https://github.com/sandbox-pokhara/django-form-action/issues"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-dir]
+"django_form_action" = "django_form_action"
+
+[tool.setuptools.dynamic]
+version = { attr = "django_form_action.__version__" }
+dependencies = { file = "requirements.txt" }
+
+[tool.isort]
+line_length = 79
+force_single_line = true
+
 [tool.black]
+line-length = 79
 preview = true
+
+[tool.pyright]
+include = ["django_form_action", "test.py"]
+typeCheckingMode = "strict"
