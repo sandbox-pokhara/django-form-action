@@ -87,9 +87,11 @@ def form_action(form_cls: Type[F], description: str):
         ) -> HttpResponse | None:
             action = cast(str, request.POST["action"])
             if request.POST.get("submit") is not None:
-                my_form = form_cls(request.POST, request.FILES)
+                my_form = form_cls(
+                    data=request.POST, files=request.FILES, queryset=queryset  # type: ignore
+                )
                 if my_form.is_valid():
-                    # sucess
+                    # success
                     return func(modeladmin, request, queryset, my_form)
                 # show form with errors
                 return render_form(
@@ -98,7 +100,7 @@ def form_action(form_cls: Type[F], description: str):
             else:
                 # show an empty form
                 return render_form(
-                    request, form_cls(), description, action, queryset
+                    request, form_cls(queryset=queryset), description, action, queryset  # type: ignore
                 )
 
         wrapper.short_description = description  # type:ignore
