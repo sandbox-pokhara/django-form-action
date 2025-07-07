@@ -10,6 +10,8 @@ You can install the package via pip:
 pip install django-form-action
 ```
 
+Add `django_form_action` to `INSTALLED_APPS`.
+
 ## Demo
 
 ![Step 1](docs/step1.png)
