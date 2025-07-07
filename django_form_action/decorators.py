@@ -6,52 +6,16 @@ from typing import TypeVar
 from typing import cast
 
 from django.contrib import admin
+from django.db.models import Model
 from django.db.models import QuerySet
 from django.forms import Form
 from django.http import HttpRequest
 from django.http import HttpResponse
-from django.template import RequestContext
-from django.template import Template
-
-template = Template(
-    """
-{% extends "admin/base_site.html" %}
-{% load admin_urls static l10n %}
-{% block extrastyle %}
-  {{ block.super }}
-  <link rel="stylesheet"
-        type="text/css"
-        href="{% static "admin/css/forms.css" %}">
-{% endblock %}
-{% block content %}
-  <div id="content-main">
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {% for obj in queryset.all %}<input type="hidden" name="_selected_action" value="{{ obj.pk|unlocalize }}"/>{% endfor %}
-      <div>
-        {% if form.errors %}<p class="errornote">Please correct the errors below.</p>{% endif %}
-        <fieldset class="module aligned wide">
-          {% for field in form %}
-            <div class="form-row">
-              {{ field.errors }}
-              {{ field.label_tag }} {{ field }}
-              {% if field.help_text %}<div class="help">{{ field.help_text|safe }}</div>{% endif %}
-            </div>
-          {% endfor %}
-        </div>
-      </fieldset>
-      <div class="submit-row">
-        <input type="hidden" name="action" value="{{ action }}"/>
-        <input type="submit" name="submit" value="Submit" class="default" />
-      </div>
-    </form>
-  </div>
-{% endblock %}
-"""
-)
+from django.shortcuts import render
 
 
 def render_form(
+    modeladmin: "admin.ModelAdmin[M]",
     request: HttpRequest,
     form: Form,
     title: str,
@@ -61,29 +25,49 @@ def render_form(
     context = {
         "site_header": admin.site.site_header,
         "site_title": admin.site.site_title,
-        "site_title": admin.site.site_title,
         "title": title,
         "action": action,
         "form": form,
         "queryset": qs,
+        "cl": modeladmin.get_changelist_instance(request),
+        "opts": modeladmin.model._meta,
     }
-    context = RequestContext(request, context)
-    return HttpResponse(template.render(context))
+    return HttpResponse(
+        render(request, "django_form_action/intermediate.html", context)
+    )
 
 
 F = TypeVar("F", bound=Form)
+M = TypeVar("M", bound=Model)
 
 
-def form_action(form_cls: Type[F], description: str):
+def form_action(
+    model_cls: Type[M],  # only used for typing
+    form_cls: Type[F],
+    description: str,
+    pre_render_form: (
+        Callable[["admin.ModelAdmin[M]", HttpRequest, QuerySet[M], F], Any]
+        | None
+    ) = None,
+):
+    """
+    :param pre_render: Runs before form is rendered in intermediate page,
+    can be used to make modifications to form dynamically
+    """
+
     def decorator(
         func: Callable[
-            [Any, HttpRequest, QuerySet[Any], F],
+            ["admin.ModelAdmin[M]", HttpRequest, QuerySet[M], F],
             HttpResponse | None,
         ],
-    ) -> Callable[[Any, HttpRequest, QuerySet[Any]], HttpResponse | None]:
+    ) -> Callable[
+        ["admin.ModelAdmin[M]", HttpRequest, QuerySet[M]], HttpResponse | None
+    ]:
         @wraps(func)
         def wrapper(
-            modeladmin: Any, request: HttpRequest, queryset: QuerySet[Any]
+            modeladmin: "admin.ModelAdmin[M]",
+            request: HttpRequest,
+            queryset: QuerySet[M],
         ) -> HttpResponse | None:
             action = cast(str, request.POST["action"])
             if request.POST.get("submit") is not None:
@@ -93,12 +77,15 @@ def form_action(form_cls: Type[F], description: str):
                     return func(modeladmin, request, queryset, my_form)
                 # show form with errors
                 return render_form(
-                    request, my_form, description, action, queryset
+                    modeladmin, request, my_form, description, action, queryset
                 )
             else:
                 # show an empty form
+                form = form_cls()
+                if pre_render_form is not None:
+                    pre_render_form(modeladmin, request, queryset, form)
                 return render_form(
-                    request, form_cls(), description, action, queryset
+                    modeladmin, request, form, description, action, queryset
                 )
 
         wrapper.short_description = description  # type:ignore

@@ -41,9 +41,13 @@ class ChangeFirstName(Form):
     first_name = CharField()
 
 
-@form_action(ChangeFirstName, "Change selected users' first name")
+@form_action(
+    User,
+    ChangeFirstName,
+    "Change selected users' first name",
+)
 def change_first_name(
-    modeladmin: Any,
+    modeladmin: "admin.ModelAdmin[User]",
     request: HttpRequest,
     queryset: QuerySet[User],
     form: ChangeFirstName,
